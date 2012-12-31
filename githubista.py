@@ -18,18 +18,12 @@ print_progress = print_progress_to_console
 def login(username):
 	return Github(username, get_github_password(username)).get_user()
 
-def get_current_repository_name(): # TODO Change this to look for .git directory instead
-	current_file = editor.get_path()
-	repository_name = None
-	tail = ''
-	head = current_file
-	while tail != '.github':
-		repository_name = tail
-		head, tail = os.path.split(head)
-		if head == '/':
-			return None
-			
-	return repository_name
+def get_current_repository_name():
+	repository_dir = get_current_repository_dir()
+	if repository_dir == None:
+		return None
+		
+	return os.path.split(repository_dir)[1]
 
 def get_current_repository(user):
 	repository_name = get_current_repository_name()
@@ -37,8 +31,7 @@ def get_current_repository(user):
 
 def clone_repository(user, repository_name, branch_name = 'master'):
 	pythonista_dir = os.getcwd()
-	github_root_dir = create_directory_if_missing(pythonista_dir, '.github')
-	repository_dir = create_directory_if_missing(github_root_dir, repository_name)
+	repository_dir = create_directory_if_missing(pythonista_dir, repository_name)
 	git_dir = create_directory_if_missing(repository_dir, '.git')
 
 	head_file = os.path.join(git_dir, 'HEAD')
@@ -46,7 +39,7 @@ def clone_repository(user, repository_name, branch_name = 'master'):
 
 	with open(head_file, 'w') as head_file_descriptor:
 		head_file_descriptor.write(head_ref)
-	read_ref(head_file) # TODO Remove
+
 	repository = user.get_repo(repository_name)
 	branch_head_commit = get_branch_head_commit(user, repository, branch_name)
 	clone_commit(repository, repository_dir, branch_head_commit)
@@ -57,19 +50,34 @@ def get_current_head_commit(user):
 	repository = user.get_repo(repository_name)
 	return get_branch_head_commit(user, repository, branch_name)
 
-def get_current_branch_name():
+def get_current_repository_dir():
+	git_dir = get_current_git_dir()
+	if git_dir == None:
+		return None
+	
+	return get_parent_dir(git_dir)
+
+def get_current_git_dir():
 	previous_dir = ''
 	current_dir = editor.get_path()
 	git_dir_name = '.git'
 	git_dir = os.path.join(current_dir, git_dir_name)
 	while not os.path.isdir(git_dir):
 		previous_dir = current_dir
-		current_dir = os.path.split(current_dir)[0]
-		print 'previous:', previous_dir
-		print 'current:', current_dir
+		current_dir = get_parent_dir(current_dir)
 		if current_dir == previous_dir:
 			return None
 		git_dir = os.path.join(current_dir, git_dir_name)
+		
+	return git_dir
+
+def get_parent_dir(child_dir):
+	return os.path.split(child_dir)[0]
+
+def get_current_branch_name():
+	git_dir = get_current_git_dir()
+	if git_dir == None:
+		return None
 
 	head_file = os.path.join(git_dir, 'HEAD')
 	head_ref = read_ref(head_file)
@@ -80,8 +88,7 @@ def read_ref(ref_file):
 	ref = ''
 	with open(ref_file, 'r') as ref_file_descriptor:
 		ref = ref_file_descriptor.read()
-	
-	print 'Found', ref, 'in', ref_file
+
 	return ref
 
 def get_branch_head_commit(user, repository, branch_name):
