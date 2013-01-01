@@ -11,14 +11,14 @@ def print_progress_to_console(message):
 print_progress = print_progress_to_console
 
 def login():
-	username, password = load_github_credentials()
+	username, password = load_credentials()
 
 	try:
 		username, password = console.login_alert('Login', 'Login', username, password, 'Login')
 	except KeyboardInterrupt:
 		return None
 
-	save_github_credentials(username, password)
+	save_credentials(username, password)
 
 	return Github(username, password).get_user()
 
@@ -185,7 +185,7 @@ def get_username_service():
 def get_password_service():
 	return 'github_password'
 
-def load_github_credentials():
+def load_credentials():
 	username = keychain.get_password(get_username_service(), 'username')
 	password = None
 	if username is not None:
@@ -199,6 +199,6 @@ def load_github_credentials():
 
 	return username, password
 	
-def save_github_credentials(username, password):
+def save_credentials(username, password):
 	keychain.set_password(get_username_service(), 'username', username)
 	keychain.set_password(get_password_service(), username, password)
