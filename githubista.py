@@ -33,7 +33,7 @@ def get_current_repository(user):
 	repository_name = get_current_repository_name()
 	return user.get_repo(repository_name)
 
-def clone_repository(user, repository_name, branch_name = 'master'):
+def clone(user, repository_name, branch_name = 'master'):
 	pythonista_dir = os.getcwd()
 	repository_dir = create_directory_if_missing(pythonista_dir, repository_name)
 	git_dir = create_directory_if_missing(repository_dir, '.git')
