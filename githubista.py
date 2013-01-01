@@ -24,7 +24,7 @@ def login():
 
 def get_current_repository_name():
 	repository_dir = get_current_repository_dir()
-	if repository_dir == None:
+	if repository_dir is None:
 		return None
 		
 	return os.path.split(repository_dir)[1]
