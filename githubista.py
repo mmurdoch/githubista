@@ -20,7 +20,12 @@ def login():
 
 	save_credentials(username, password)
 
-	return Github(username, password).get_user()
+	github = None
+	try:
+		github = Github(username, password)
+		return github.get_user()
+	except:
+		raise
 
 def get_current_repository_name():
 	repository_dir = get_current_repository_dir()
