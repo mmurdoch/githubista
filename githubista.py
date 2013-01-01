@@ -6,7 +6,7 @@ import base64
 from github import Github
 
 def get_password_from_console(username):
-	print "Enter password for user", username
+	print "Enter password for user:", username
 	return console.secure_input()
 
 def print_progress_to_console(message):
