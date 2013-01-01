@@ -5,18 +5,22 @@ import os
 import base64
 from github import *
 
-def get_password_from_console(username):
-	print "Enter password for user:", username
-	return console.secure_input()
-
 def print_progress_to_console(message):
 	print message
 
-get_password_for = get_password_from_console
 print_progress = print_progress_to_console
 
-def login(username):
-	return Github(username, get_github_password(username)).get_user()
+def login():
+	username, password = load_github_credentials()
+
+	try:
+		username, password = console.login_alert('Login', 'Login', username, password, 'Login')
+	except KeyboardInterrupt:
+		return None
+
+	save_github_credentials(username, password)
+
+	return Github(username, password).get_user()
 
 def get_current_repository_name():
 	repository_dir = get_current_repository_dir()
@@ -175,16 +179,26 @@ def save_element(repository, repository_dir, element):
 	elif element.type == 'tree':
 		create_directory_if_missing(repository_dir, element.path)
 
-def get_keychain_service():
-	return 'github'
+def get_username_service():
+	return 'github_username'
 
-def forget_password_for(username):
-	keychain.delete_password(get_keychain_service(), username)
+def get_password_service():
+	return 'github_password'
 
-def get_github_password(username):
-	service = get_keychain_service()
-	password = keychain.get_password(service, username)
-	if password == None:
-		password = get_password_for(username)
-		keychain.set_password(service, username, password)
-	return password
+def load_github_credentials():
+	username = keychain.get_password(get_username_service(), 'username')
+	password = None
+	if username is not None:
+		password = keychain.get_password(get_password_service(), username)
+		
+	if username is None:
+		username = ''
+		
+	if password is None:
+		password = ''
+
+	return username, password
+	
+def save_github_credentials(username, password):
+	keychain.set_password(get_username_service(), 'username', username)
+	keychain.set_password(get_password_service(), username, password)
