@@ -5,11 +5,6 @@ import os
 import base64
 from github import *
 
-def print_progress_to_console(message):
-	print message
-
-print_progress = print_progress_to_console
-
 def login():
 	username, password = load_credentials()
 
@@ -166,7 +161,6 @@ def clone_commit(repository, repository_dir, commit):
 
 def save_recursive_tree(repository, repository_dir, tree):
 	for element in tree:
-		print_progress(element.path)
 		save_element(repository, repository_dir, element)
 
 def save_element(repository, repository_dir, element):
