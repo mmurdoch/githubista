@@ -3,7 +3,7 @@ import keychain
 import editor
 import os
 import base64
-from github import Github
+from github import *
 
 def get_password_from_console(username):
 	print "Enter password for user:", username
@@ -43,6 +43,40 @@ def clone_repository(user, repository_name, branch_name = 'master'):
 	repository = user.get_repo(repository_name)
 	branch_head_commit = get_branch_head_commit(user, repository, branch_name)
 	clone_commit(repository, repository_dir, branch_head_commit)
+
+def commit(user, commit_message):
+	path = editor.get_path()
+	tree_path, blob_name = os.path.split(path)
+
+	repository = get_current_repository(user)
+
+	blob = repository.create_git_blob(editor.get_text(), 'utf-8')
+
+	parent_commit = get_current_head_commit(user)
+	
+	original_tree = repository.get_git_tree(parent_commit.tree.sha, True)
+
+	tree_elements = []
+	for original_element in original_tree.tree:
+		element_sha = original_element.sha
+		if blob_name == original_element.path:
+			element_sha = blob.sha
+
+		element = InputGitTreeElement(
+			original_element.path,
+			original_element.mode,
+			original_element.type,
+			sha = element_sha)
+		tree_elements.append(element)
+
+	tree = repository.create_git_tree(tree_elements)
+	# Need to update all ancestor trees as well
+	
+	commit = repository.create_git_commit(commit_message, tree, [parent_commit])
+
+	current_branch_head_ref = 'heads/' + get_current_branch_name()
+	head_ref = repository.get_git_ref(current_branch_head_ref)
+	head_ref.edit(commit.sha)
 
 def get_current_head_commit(user):
 	repository_name = get_current_repository_name()
