@@ -1,9 +1,10 @@
-import console
-import keychain
-import editor
-import os
 import base64
+import console
+import editor
 from github import *
+import keychain
+import os
+import traceback
 
 def login():
 	username, password = load_credentials()
@@ -15,12 +16,7 @@ def login():
 
 	save_credentials(username, password)
 
-	github = None
-	try:
-		github = Github(username, password)
-		return github.get_user()
-	except:
-		raise
+	return Github(username, password).get_user()
 
 def get_current_repository_name():
 	repository_dir = get_current_repository_dir()
@@ -48,7 +44,20 @@ def clone(user, repository_name, branch_name = 'master'):
 	branch_head_commit = get_branch_head_commit(user, repository, branch_name)
 	clone_commit(repository, repository_dir, branch_head_commit)
 
-def commit(user, commit_message):
+def commit():
+	print 'Committing...'
+	try:
+		user = login()
+		if user != None:
+			print 'Succeeded in logging in'
+			commit_message = console.input_alert('Commit Message', '', '', 'Commit')
+			commit_authenticated(user, commit_message)
+		else:
+			print 'Failed to login'
+	except:
+		traceback.print_exc()
+
+def commit_authenticated(user, commit_message):
 	path = editor.get_path()
 	tree_path, blob_name = os.path.split(path)
 
