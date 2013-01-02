@@ -10,7 +10,7 @@ def login():
 	username, password = load_credentials()
 
 	try:
-		username, password = console.login_alert('Login', 'Login', username, password, 'Login')
+		username, password = console.login_alert('Login', '', username, password, 'Login')
 	except KeyboardInterrupt:
 		return None
 
@@ -29,7 +29,19 @@ def get_current_repository(user):
 	repository_name = get_current_repository_name()
 	return user.get_repo(repository_name)
 
-def clone(user, repository_name, branch_name = 'master'):
+def clone():
+	try:
+		user = login()
+		if user != None:
+			try:
+				repository_name = console.input_alert('Repository Name', '', '', 'Clone')
+				clone_authenticated(user, repository_name)
+			except KeyboardInterrupt:
+				return
+	except:
+		traceback.print_exc()	
+
+def clone_authenticated(user, repository_name, branch_name = 'master'):
 	pythonista_dir = os.getcwd()
 	repository_dir = create_directory_if_missing(pythonista_dir, repository_name)
 	git_dir = create_directory_if_missing(repository_dir, '.git')
@@ -48,8 +60,11 @@ def commit():
 	try:
 		user = login()
 		if user != None:
-			commit_message = console.input_alert('Commit Message', '', '', 'Commit')
-			commit_authenticated(user, commit_message)
+			try:
+				commit_message = console.input_alert('Commit Message', '', '', 'Commit')
+				commit_authenticated(user, commit_message)
+			except KeyboardInterrupt:
+				return
 	except:
 		traceback.print_exc()
 
