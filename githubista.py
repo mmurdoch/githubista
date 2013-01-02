@@ -45,15 +45,11 @@ def clone(user, repository_name, branch_name = 'master'):
 	clone_commit(repository, repository_dir, branch_head_commit)
 
 def commit():
-	print 'Committing...'
 	try:
 		user = login()
 		if user != None:
-			print 'Succeeded in logging in'
 			commit_message = console.input_alert('Commit Message', '', '', 'Commit')
 			commit_authenticated(user, commit_message)
-		else:
-			print 'Failed to login'
 	except:
 		traceback.print_exc()
 
