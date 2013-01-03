@@ -10,7 +10,7 @@ def login():
 	username, password = load_credentials()
 
 	try:
-		username, password = console.login_alert('Login', '', username, password, 'Login')
+		username, password = console.login_alert('Github Login', '', username, password, 'Login')
 	except KeyboardInterrupt:
 		return None
 
